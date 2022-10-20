@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require('express')
 const router =express.Router()
 
 const UserModel =require('../Models/User')
@@ -22,4 +22,4 @@ router.post('/login',async (req,res)=>{
 })
 
 
-module.exports =router;
+module.exports =router

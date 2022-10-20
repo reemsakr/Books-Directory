@@ -1,10 +1,10 @@
 const express = require('express')
-const User = require('../Models/Author')
+//const User = require('../Models/Author')
 const router = express.Router()
 const AuthorModel = require('../Models/Author')
 const Joi = require('@hapi/joi')
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
+//const bcrypt = require('bcrypt')
+//const jwt = require('jsonwebtoken')
 const verifyToken = require('./verifyjwt')
 
 router.get('/books', verifyToken, async (req, res) => {
@@ -19,97 +19,97 @@ router.get('/books', verifyToken, async (req, res) => {
             }
         }
     ])
-        try {
-            res.send(books)
-        }
-        catch (err) {
-            res.send(err)
-        }
+    try {
+        res.send(books)
+    }
+    catch (err) {
+        res.send(err)
+    }
 
+})
+
+
+router.get('/all', verifyToken, async (req, res) => {
+    const Authors = await AuthorModel.find()
+    try {
+        res.send(Authors)
+    }
+    catch (err) {
+        res.send(err)
+    }
+
+})
+
+router.post('/add', verifyToken, async (req, res) => {
+
+    const schema = {
+        name: Joi.string().min(3).required(),
+        email: Joi.string().min(5).email().required()
+
+    }
+    const { error } = Joi.validate(req.body, schema)
+
+    if (error) return res.send(error.details[0].message)
+
+
+
+    const Author = new AuthorModel({
+        name: req.body.name,
+        email: req.body.email
     })
+    const save = await Author.save()
+    try {
+        res.send(save)
+    }
+    catch (err) {
+        res.send(err)
+    }
+
+})
 
 
-    router.get('/all', verifyToken, async (req, res) => {
-        const Authors = await AuthorModel.find()
-        try {
-            res.send(Authors)
+router.get('/:id', verifyToken, async (req, res) => {
+    const id = req.params.id
+
+    const Author = await AuthorModel.findById(id)
+    try {
+        res.send(Author)
+    }
+    catch (err) {
+        res.send(err)
+    }
+
+})
+
+
+router.delete('/:id', verifyToken, async (req, res) => {
+    const id = req.params.id
+    const Author = await AuthorModel.remove({ _id: id })
+
+    try {
+        res.send(Author)
+    }
+    catch (err) {
+        res.send(err)
+    }
+})
+
+router.patch('/:id', verifyToken, async (req, res) => {
+    const id = req.params.id
+
+    const updatedAuthor = await AuthorModel.updateOne(
+        { _id: id },
+        {
+            $set: req.body
         }
-        catch (err) {
-            res.send(err)
-        }
+    )
+    try {
+        res.send(updatedAuthor)
+    }
+    catch (err) {
+        res.send(err)
+    }
 
-    })
+})
 
-    router.post('/add', verifyToken, async (req, res) => {
-
-        const schema = {
-            name: Joi.string().min(3).required(),
-            email: Joi.string().min(5).email().required()
-
-        }
-        const { error } = Joi.validate(req.body, schema)
-
-        if (error) return res.send(error.details[0].message)
-
-
-
-        const Author = new AuthorModel({
-            name: req.body.name,
-            email: req.body.email
-        })
-        const save = await Author.save()
-        try {
-            res.send(save)
-        }
-        catch (err) {
-            res.send(err)
-        }
-
-    })
-
-
-    router.get('/:id', verifyToken, async (req, res) => {
-        const id = req.params.id
-
-        const Author = await AuthorModel.findById(id)
-        try {
-            res.send(Author)
-        }
-        catch (err) {
-            res.send(err)
-        }
-
-    })
-
-
-    router.delete('/:id', verifyToken, async (req, res) => {
-        const id = req.params.id
-        const Author = await AuthorModel.remove({ _id: id })
-
-        try {
-            res.send(Author)
-        }
-        catch (err) {
-            res.send(err)
-        }
-    })
-
-    router.patch('/:id', verifyToken, async (req, res) => {
-        const id = req.params.id
-
-        const updatedAuthor = await AuthorModel.updateOne(
-            { _id: id },
-            {
-                $set: req.body
-            }
-        )
-        try {
-            res.send(updatedAuthor)
-        }
-        catch (err) {
-            res.send(err)
-        }
-
-    })
-
-    module.exports = router
+module.exports = router
